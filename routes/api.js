@@ -15,7 +15,10 @@ const stockLikesSchema = new mongoose.Schema({
   name: { type: String, required: true },
   count: { type: Number, default: 1 },
   ipAddress: [String],
-});
+}); 
+
+const StockLikes = mongoose.model("StockLikes", stockLikesSchema);
+const ObjectId = mongoose.Types.ObjectId;
 
 module.exports = function (app) {
 
