@@ -12,7 +12,7 @@ suite("Functional Tests", function () {
       chai
         .request(server)
         .get("/api/stock-prices/")
-        .send({ stock: testStock1 })
+        .query({ stock: testStock1 })
         .end((err, res) => {
           assert.equal(res.status, 200);
           assert.equal(res.body.stockData.stock, testStock1);
@@ -26,7 +26,7 @@ suite("Functional Tests", function () {
       chai
         .request(server)
         .get("/api/stock-prices/")
-        .send({ stock: testStock1 })
+        .query({ stock: testStock1, like: "true" })
         .end((err, res) => {
           assert.equal(res.status, 200);
           assert.equal(res.body.stockData.stock, testStock1);
@@ -40,7 +40,7 @@ suite("Functional Tests", function () {
       chai
         .request(server)
         .get("/api/stock-prices/")
-        .send({ stock: testStock1 })
+        .query({ stock: testStock1, like: 'true' })
         .end((err, res) => {
           assert.equal(res.status, 200);
           assert.equal(res.body.stockData.stock, testStock1);
@@ -56,7 +56,7 @@ suite("Functional Tests", function () {
       chai
         .request(server)
         .get("/api/stock-prices/")
-        .send({ stock: testStock1, stock: testStock2 })
+        .query({ stock: [testStock1, testStock2] })
         .end((err, res) => {
           assert.equal(res.status, 200);
           assert.equal(res.body.stockData[0].stock, testStock1);
@@ -77,7 +77,7 @@ suite("Functional Tests", function () {
       chai
         .request(server)
         .get("/api/stock-prices/")
-        .send({ stock: testStock1, stock: testStock2 })
+        .query({ stock: [testStock1, testStock2], like: 'true' })
         .end((err, res) => {
           assert.equal(res.status, 200);
           assert.equal(res.body.stockData[0].stock, testStock1)
