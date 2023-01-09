@@ -41,19 +41,13 @@ module.exports = function (app) {
       if( Array.isArray(stock) ) {
         getStockPrice(stock[0]);
         getStockPrice(stock[1]);
-        StockLikes.find({ name: stock[0] }, (err,query) => {
-          console.log(query)
-        });
-        StockLikes.find({ name: stock[1] }, (err, query) => {
-          console.log(query);
-        });
+        getLikes(stock[0]);
+        getLikes(stock[1]);
       }
 
       if (!Array.isArray(stock)) {
         getStockPrice(stock);
-        StockLikes.find({ name: stock[0] }, (err, query) => {
-          console.log(query);
-        });
+        getLikes(stock);
       }
     });
 
@@ -92,6 +86,26 @@ const bcryptIP = (ipAddress) => {
         }
       }
     );
-    return promise
   })
+  return promise;
+}
+
+const getLikes = (stockName) => {
+  const promise = new Promise((resolve, reject) => {
+    StockLikes.find({ name: stockName }, (err, query) => {
+      if (err) {
+        reject(err);
+        console.log(err)
+      }
+      if (query.length == 0) {
+        resolve(0);
+        console.log(0);
+      }
+      if (query.length < 0) {
+        resolve(query[0].count);
+        console.log(query[0].count);
+      }
+    });
+  })
+  return promise;
 }
