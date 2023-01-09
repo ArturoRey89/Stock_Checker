@@ -13,8 +13,15 @@ db.on("error", (error) => console.log("Database connection error: ", error));
 db.on("connected", () => console.log("Connected to database"));
 
 const stockLikesSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  count: { type: Number, default: 1 },
+  name: { 
+    type: String, 
+    required: true, 
+    unique: true 
+  },
+  count: { 
+    type: Number, 
+    default: 0 
+  },
   ipAddress: [String],
 }); 
 
@@ -26,35 +33,36 @@ module.exports = function (app) {
   app.route('/api/stock-prices')
     .get(function (req, res){
       let {stock, like} = req.query;
+      console.log(req.header("x-forwarded-for"));
 
-      if(Array.isArray(stock)) {
+      if( Array.isArray(stock) ) {
         getStockPrice(stock[0]).then((response) => console.log(response));
         getStockPrice(stock[1]).then((response) => console.log(response));
       }
 
-      if(!Array.isArray(stock)) {
+      if( stock && !Array.isArray(stock) ) {
+        StockLikes.find({ name: stocktoUpperCase() });
         getStockPrice(stock).then((response) => console.log(response));
       }
     });
 
-    const getStockPrice = (stockSymbol) => {
-      const promise = new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        const url = `https://stock-price-checker-proxy.freecodecamp.rocks/v1/stock/${stockSymbol}/quote`;
+};
 
-        xhr.open("GET", url);
-        xhr.responseType = 'json'
-        xhr.onload = () => {
-          let { symbol, latestPrice } = JSON.parse(xhr.responseText);
-          resolve({ symbol: symbol, price: latestPrice });
-        };
-        xhr.onerror = () => {
-          reject("Stock value not returned")
-        }
-        xhr.send();
-      })
-      console.log(stockSymbol);
-      return promise
-    }
+const getStockPrice = (stockSymbol) => {
+  const promise = new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    const url = `https://stock-price-checker-proxy.freecodecamp.rocks/v1/stock/${stockSymbol}/quote`;
 
+    xhr.open("GET", url);
+    xhr.responseType = "json";
+    xhr.onload = () => {
+      let { symbol, latestPrice } = JSON.parse(xhr.responseText);
+      resolve({ symbol: symbol, price: latestPrice });
+    };
+    xhr.onerror = () => {
+      reject("Stock value not returned");
+    };
+    xhr.send();
+  });
+  return promise;
 };
