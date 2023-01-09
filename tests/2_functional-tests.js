@@ -4,6 +4,7 @@ const assert = chai.assert;
 const server = require("../server");
 const testStock1 = "GOOG"
 const testStock2 = "AMZN"
+const ipAddress = "192.168.2.1"
 chai.use(chaiHttp);
 
 suite("Functional Tests", function () {
@@ -12,6 +13,7 @@ suite("Functional Tests", function () {
       chai
         .request(server)
         .get("/api/stock-prices/")
+        .set("X-Forwarded-For", ipAddress)
         .query({ stock: testStock1 })
         .end((err, res) => {
           assert.equal(res.status, 200);
@@ -26,6 +28,7 @@ suite("Functional Tests", function () {
       chai
         .request(server)
         .get("/api/stock-prices/")
+        .set("X-Forwarded-For", ipAddress)
         .query({ stock: testStock1, like: "true" })
         .end((err, res) => {
           assert.equal(res.status, 200);
@@ -40,7 +43,8 @@ suite("Functional Tests", function () {
       chai
         .request(server)
         .get("/api/stock-prices/")
-        .query({ stock: testStock1, like: 'true' })
+        .set("X-Forwarded-For", ipAddress)
+        .query({ stock: testStock1, like: "true" })
         .end((err, res) => {
           assert.equal(res.status, 200);
           assert.equal(res.body.stockData.stock, testStock1);
@@ -56,6 +60,7 @@ suite("Functional Tests", function () {
       chai
         .request(server)
         .get("/api/stock-prices/")
+        .set("X-Forwarded-For", ipAddress)
         .query({ stock: [testStock1, testStock2] })
         .end((err, res) => {
           assert.equal(res.status, 200);
@@ -77,10 +82,11 @@ suite("Functional Tests", function () {
       chai
         .request(server)
         .get("/api/stock-prices/")
-        .query({ stock: [testStock1, testStock2], like: 'true' })
+        .set("X-Forwarded-For", ipAddress)
+        .query({ stock: [testStock1, testStock2], like: "true" })
         .end((err, res) => {
           assert.equal(res.status, 200);
-          assert.equal(res.body.stockData[0].stock, testStock1)
+          assert.equal(res.body.stockData[0].stock, testStock1);
           assert.isNumber(res.body.stockData[0].price);
           assert.isNumber(res.body.stockData[0].rel_likes);
           assert.equal(res.body.stockData[1].stock, testStock2);
