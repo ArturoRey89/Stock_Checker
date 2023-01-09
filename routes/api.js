@@ -1,5 +1,6 @@
 'use strict';
 const XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+const bcrypt = require("bcrypt");
 const mongoose = require("mongoose");
 
 //Setup and connect to database
@@ -33,16 +34,26 @@ module.exports = function (app) {
   app.route('/api/stock-prices')
     .get(function (req, res){
       let {stock, like} = req.query;
-      console.log(req.header("x-forwarded-for"));
-
-      if( Array.isArray(stock) ) {
-        getStockPrice(stock[0]).then((response) => console.log(response));
-        getStockPrice(stock[1]).then((response) => console.log(response));
+      if(typeof stock === 'undefined') {
+        return 
       }
 
-      if( stock && !Array.isArray(stock) ) {
-        StockLikes.find({ name: stocktoUpperCase() });
-        getStockPrice(stock).then((response) => console.log(response));
+      if( Array.isArray(stock) ) {
+        getStockPrice(stock[0]);
+        getStockPrice(stock[1]);
+        StockLikes.find({ name: stock[0] }, (err,query) => {
+          console.log(query)
+        });
+        StockLikes.find({ name: stock[1] }, (err, query) => {
+          console.log(query);
+        });
+      }
+
+      if (!Array.isArray(stock)) {
+        getStockPrice(stock);
+        StockLikes.find({ name: stock[0] }, (err, query) => {
+          console.log(query);
+        });
       }
     });
 
@@ -66,3 +77,21 @@ const getStockPrice = (stockSymbol) => {
   });
   return promise;
 };
+
+const bcryptIP = (ipAddress) => {
+  const promise = new Promise((resolve, reject) => {
+    bcrypt.hash(
+      req.header("x-forwarded-for"),
+      process.env.SALT * 1,
+      (err, hash) => {
+        if(err){
+          reject(err)
+        }
+        if (hash) {
+          resolve(hash, req.header("x-forwarded-for"));
+        }
+      }
+    );
+    return promise
+  })
+}
