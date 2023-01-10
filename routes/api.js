@@ -48,6 +48,7 @@ module.exports = function (app) {
       if (!Array.isArray(stock)) {
         getStockPrice(stock);
         getLikes(stock);
+        addLikes(stock, );
       }
     });
 
@@ -74,18 +75,14 @@ const getStockPrice = (stockSymbol) => {
 
 const bcryptIP = (ipAddress) => {
   const promise = new Promise((resolve, reject) => {
-    bcrypt.hash(
-      req.header("x-forwarded-for"),
-      process.env.SALT * 1,
-      (err, hash) => {
-        if(err){
-          reject(err)
-        }
-        if (hash) {
-          resolve(hash, req.header("x-forwarded-for"));
-        }
+    bcrypt.hash(ipAddress, process.env.SALT * 1, (err, hash) => {
+      if (err) {
+        reject(err);
       }
-    );
+      if (hash) {
+        resolve(hash);
+      }
+    });
   })
   return promise;
 }
