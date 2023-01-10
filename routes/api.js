@@ -21,7 +21,7 @@ const stockLikesSchema = new mongoose.Schema({
   },
   count: { 
     type: Number, 
-    default: 0 
+    default: 1 
   },
   ipAddress: [String],
 }); 
@@ -107,5 +107,58 @@ const getLikes = (stockName) => {
       }
     });
   })
+  return promise;
+}
+
+const addLikes = (stockName, ipAddress) => {
+  const promise = new Promise((resolve, reject) => {
+    StockLikes.find({ name: stockName }, (err, query) => {
+
+      if (err) {
+        reject(err);
+        console.log(err);
+      }
+      //handle unregisterd stock
+      if (query.length == 0) {
+        bcryptIP(ipAddress).then((err, ipHash) => {
+          StockLikes.create(
+            {
+              name: stockName.toUpperCase(),
+              count: 1,
+              ipAddress: [ipHash],
+            },
+            (err, stockLikes) => {
+              if (err){
+                reject(err)
+              }
+              else {
+                resolve(true);
+              }
+            }
+          );
+        });
+      }
+      // check if IP is new, and add like if new 
+      if (query.length < 0) {
+        let ipIsUnique = true;
+        query[0].ipAddress.forEach((ipHash) => {
+          bcrypt.compare(ipHash, ipAddress, (err, match) => {
+            if(err) {
+              reject(err)
+            }
+            ipIsUnique = !match
+          });
+        });
+        if (ipIsUnique) {
+          bcryptIP(ipAddress).then((err, ipHash) => {
+            query[0].ipAddress.push(ipHash);
+            query[0].count += 1;
+            query[0].save()
+            resolve(true);
+          })
+        }
+      }
+    });
+  });
   return promise;
 }
