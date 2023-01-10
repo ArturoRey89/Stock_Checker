@@ -33,21 +33,27 @@ module.exports = function (app) {
   app.route("/api/stock-prices").get(function (req, res) {
     let { stock, like } = req.query
     if (typeof stock === "undefined") {
+      console.log("no stock provided")
       return
     }
 
     if (Array.isArray(stock)) {
-      getStockPrice(stock[0])
-      getStockPrice(stock[1])
-      getLikes(stock[0])
-      getLikes(stock[1])
+      console.log("Compare stocks:")
+      Promise.allSettled([
+        getStockPrice(stock[0]),
+        getStockPrice(stock[1]),
+        getLikes(stock[0]),
+        getLikes(stock[1]),
+      ]).then((results) =>
+        results.forEach((result) => console.log(result.status))
+      )
     }
 
     if (!Array.isArray(stock)) {
-      Promise.all()
-      getStockPrice(stock)
-      getLikes(stock)
-      addLikes(stock, req.header("x-forwarded-for"))
+      console.log("View stock:")
+      Promise.allSettled([getStockPrice(stock), getLikes(stock)]).then(
+        (results) => results.forEach((result) => console.log(result.status))
+      )
     }
   })
 }
@@ -94,11 +100,9 @@ const getLikes = (stockName) => {
       }
       if (query.length == 0) {
         resolve(0)
-        console.log(0)
       }
       if (query.length < 0) {
         resolve(query[0].count)
-        console.log(query[0].count)
       }
     })
   })
