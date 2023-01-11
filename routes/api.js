@@ -36,24 +36,38 @@ module.exports = function (app) {
       console.log("no stock provided")
       return
     }
+    //addLikes(stock[0], req.headers["x-forwarded-for"]),
 
     if (Array.isArray(stock)) {
       console.log("Compare stocks:")
-      Promise.allSettled([
+      Promise.all([
         getStockPrice(stock[0]),
-        getStockPrice(stock[1]),
         getLikes(stock[0]),
+        getStockPrice(stock[1]),
         getLikes(stock[1]),
-      ]).then((results) =>
-        results.forEach((result) => console.log(result.status))
-      )
+      ]).then((results) => {
+        console.log(results)
+        let [stock1, likes1, stock2, likes2] = results
+        stock1["rel_likes"] = likes1 - likes2
+        stock2["rel_likes"] = likes2 - likes1
+        res.json({
+          stockData: [
+            { stock: stock1.symbol, price: stock1.price, likes: likes1 },
+            { stock: stock2.symbol, price: stock2.price, likes: likes2 },
+          ],
+        })
+      })
     }
 
     if (!Array.isArray(stock)) {
       console.log("View stock:")
-      Promise.allSettled([getStockPrice(stock), getLikes(stock)]).then(
-        (results) => results.forEach((result) => console.log(result.status))
-      )
+      Promise.all([getStockPrice(stock), getLikes(stock)]).then((results) => {
+        let [stock, likes] = results
+        console.log(stock, likes)
+        res.json({
+          stockData: { stock: stock.symbol, price: stock.price, likes: likes },
+        })
+      })
     }
   })
 }
@@ -143,15 +157,21 @@ const addLikes = (stockName, ipAddress) => {
             if (err) {
               reject(err)
             }
-            ipIsUnique = !match
+            if (match) {
+              ipIsUnique = false
+            }
           })
         })
         if (ipIsUnique) {
           bcryptIP(ipAddress).then((err, ipHash) => {
-            query[0].ipAddress.push(ipHash)
-            query[0].count += 1
-            query[0].save()
-            resolve(true)
+            if (err) {
+              reject(err)
+            } else {
+              query[0].ipAddress.push(ipHash)
+              query[0].count += 1
+              query[0].save()
+              resolve(true)
+            }
           })
         }
       }
