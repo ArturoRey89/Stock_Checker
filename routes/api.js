@@ -32,14 +32,23 @@ const ObjectId = mongoose.Types.ObjectId
 module.exports = function (app) {
   app.route("/api/stock-prices").get(function (req, res) {
     let { stock, like } = req.query
+    //no query provided
     if (typeof stock === "undefined") {
       console.log("no stock provided")
       return
     }
-    //addLikes(stock[0], req.headers["x-forwarded-for"]),
 
+    //Compare Stocks
     if (Array.isArray(stock)) {
       console.log("Compare stocks:")
+      if (like == true) {
+        addLikes(stock[0], req.headers["x-forwarded-for"]).then((likeAdded) =>
+          console.log("like added: ", likeAdded)
+        )
+        addLikes(stock[1], req.headers["x-forwarded-for"]).then((likeAdded) =>
+          console.log("like added: ", likeAdded)
+        )
+      }
       Promise.all([
         getStockPrice(stock[0]),
         getLikes(stock[0]),
@@ -48,22 +57,33 @@ module.exports = function (app) {
       ]).then((results) => {
         console.log(results)
         let [stock1, likes1, stock2, likes2] = results
-        stock1["rel_likes"] = likes1 - likes2
-        stock2["rel_likes"] = likes2 - likes1
         res.json({
           stockData: [
-            { stock: stock1.symbol, price: stock1.price, likes: likes1 },
-            { stock: stock2.symbol, price: stock2.price, likes: likes2 },
+            {
+              stock: stock1.symbol,
+              price: stock1.price,
+              rel_likes: likes1 - likes2,
+            },
+            {
+              stock: stock2.symbol,
+              price: stock2.price,
+              rel_likes: likes2 - likes2,
+            },
           ],
         })
       })
     }
-
+    //Get single stock
     if (!Array.isArray(stock)) {
+      if (like == true) {
+        addLikes(stock, req.headers["x-forwarded-for"]).then((likeAdded) =>
+          console.log("like added: ", likeAdded)
+        )
+      }
       console.log("View stock:")
       Promise.all([getStockPrice(stock), getLikes(stock)]).then((results) => {
         let [stock, likes] = results
-        console.log(stock, likes)
+        console.log("promise.all")
         res.json({
           stockData: { stock: stock.symbol, price: stock.price, likes: likes },
         })
