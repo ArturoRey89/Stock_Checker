@@ -97,6 +97,3 @@ suite("Functional Tests", function () {
     })
   })
 })
-
-// GET single reult: { stockData: { stock: "GOOG", price: 786.9, likes: 1 } };
-// GET compare two result: { stockData: [ { stock: "MSFT", price: 62.3, rel_likes: -1 }, { stock: "GOOG", price: 786.9, rel_likes: 1 } ] };
