@@ -55,7 +55,6 @@ module.exports = function (app) {
         getStockPrice(stock[1]),
         getLikes(stock[1]),
       ]).then((results) => {
-        console.log(results)
         let [stock1, likes1, stock2, likes2] = results
         res.json({
           stockData: [
@@ -83,7 +82,6 @@ module.exports = function (app) {
       console.log("View stock:")
       Promise.all([getStockPrice(stock), getLikes(stock)]).then((results) => {
         let [stock, likes] = results
-        console.log("promise.all")
         res.json({
           stockData: { stock: stock.symbol, price: stock.price, likes: likes },
         })
@@ -135,7 +133,7 @@ const getLikes = (stockName) => {
       if (query.length == 0) {
         resolve(0)
       }
-      if (query.length < 0) {
+      if (query.length > 0) {
         resolve(query[0].count)
       }
     })
@@ -182,6 +180,11 @@ const addLikes = (stockName, ipAddress) => {
             }
           })
         })
+
+        if (!ipIsUnique) {
+          resolve(false)
+        }
+
         if (ipIsUnique) {
           bcryptIP(ipAddress).then((err, ipHash) => {
             if (err) {
