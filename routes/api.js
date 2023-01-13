@@ -41,7 +41,7 @@ module.exports = function (app) {
     //Compare Stocks
     if (Array.isArray(stock)) {
       console.log("Compare stocks:")
-      if (like == true) {
+      if (like === "true") {
         addLikes(stock[0], req.headers["x-forwarded-for"]).then((likeAdded) =>
           console.log("like added: ", likeAdded)
         )
@@ -66,7 +66,7 @@ module.exports = function (app) {
             {
               stock: stock2.symbol,
               price: stock2.price,
-              rel_likes: likes2 - likes2,
+              rel_likes: likes2 - likes1,
             },
           ],
         })
@@ -74,7 +74,7 @@ module.exports = function (app) {
     }
     //Get single stock
     if (!Array.isArray(stock)) {
-      if (like == true) {
+      if (like === "true") {
         addLikes(stock, req.headers["x-forwarded-for"]).then((likeAdded) =>
           console.log("like added: ", likeAdded)
         )
@@ -125,7 +125,7 @@ const bcryptIP = (ipAddress) => {
 
 const getLikes = (stockName) => {
   const promise = new Promise((resolve, reject) => {
-    StockLikes.find({ name: stockName }, (err, query) => {
+    StockLikes.find({ name: stockName.toUpperCase() }, (err, query) => {
       if (err) {
         reject(err)
         console.log(err)
@@ -143,14 +143,14 @@ const getLikes = (stockName) => {
 
 const addLikes = (stockName, ipAddress) => {
   const promise = new Promise((resolve, reject) => {
-    StockLikes.find({ name: stockName }, (err, query) => {
+    StockLikes.find({ name: stockName.toUpperCase() }, (err, query) => {
       if (err) {
         reject(err)
         console.log(err)
       }
       //handle unregisterd stock
-      if (query.length == 0) {
-        bcryptIP(ipAddress).then((err, ipHash) => {
+      if (typeof query[0] == "undefined") {
+        bcryptIP(ipAddress).then((ipHash) => {
           StockLikes.create(
             {
               name: stockName.toUpperCase(),
@@ -168,10 +168,10 @@ const addLikes = (stockName, ipAddress) => {
         })
       }
       // check if IP is new, and add like if new
-      if (query.length < 0) {
+      else {
         let ipIsUnique = true
         query[0].ipAddress.forEach((ipHash) => {
-          bcrypt.compare(ipHash, ipAddress, (err, match) => {
+          bcrypt.compare(ipAddress, ipHash, (err, match) => {
             if (err) {
               reject(err)
             }
