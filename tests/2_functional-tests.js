@@ -4,7 +4,7 @@ const assert = chai.assert
 const server = require("../server")
 const testStock1 = "GOOG"
 const testStock2 = "AMZN"
-const ipAddress = "192.168.2.1"
+const ipAddress = "192.168.2.4"
 chai.use(chaiHttp)
 
 suite("Functional Tests", function () {
